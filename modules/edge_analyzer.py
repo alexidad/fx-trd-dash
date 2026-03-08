@@ -15,12 +15,20 @@ def edge_page():
 
     df = pd.DataFrame(trades)
 
-    st.subheader("Strategy Performance")
+    st.subheader("Performance by Strategy")
 
-    strategy_perf = df.groupby("strategy")["net_profit"].agg(
-        trades="count",
-        total_profit="sum",
-        avg_profit="mean"
-    )
+    strategy_perf = df.groupby("strategy")["net_profit"].sum()
 
-    st.dataframe(strategy_perf, use_container_width=True)
+    st.bar_chart(strategy_perf)
+
+    st.subheader("Performance by Pair")
+
+    pair_perf = df.groupby("pair")["net_profit"].sum()
+
+    st.bar_chart(pair_perf)
+
+    st.subheader("Performance by Session")
+
+    session_perf = df.groupby("session")["net_profit"].sum()
+
+    st.bar_chart(session_perf)
