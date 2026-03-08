@@ -1,61 +1,23 @@
 import streamlit as st
 import pandas as pd
-import os
+from supabase_client import load_trades
 
-ACCOUNTS_FILE = "accounts.csv"
-ACCOUNTS_FOLDER = "accounts"
+st.title("📓 Trade Journal")
 
-def journal_page():
+trades = load_trades()
 
-    st.title("Trade Journal")
+if not trades:
+    st.info("No trades recorded.")
+    st.stop()
 
-    accounts = pd.read_csv(ACCOUNTS_FILE)
+df = pd.DataFrame(trades)
+df["date"] = pd.to_datetime(df["date"])
 
-    account = st.sidebar.selectbox(
-        "Account",
-        accounts["account_name"]
-    )
+pairs = sorted(df["pair"].unique())
 
-    file = f"{ACCOUNTS_FOLDER}/{account.replace(' ','_').lower()}_trades.csv"
+pair_filter = st.selectbox("Filter by Pair", ["All"] + pairs)
 
-    if not os.path.exists(file):
+if pair_filter != "All":
+    df = df[df["pair"] == pair_filter]
 
-        st.warning("No trades yet")
-        return
-
-    trades = pd.read_csv(file)
-
-    cols = st.columns(3)
-
-    for i,trade in trades.iterrows():
-
-        with cols[i % 3]:
-
-            profit = trade["net_profit"]
-
-            color = "green" if profit >= 0 else "red"
-
-            st.markdown(
-                f"""
-                ### {trade['pair']}
-                **{trade['direction']}**
-
-                Profit: :{color}[${profit:,.2f}]
-
-                Session: {trade['session']}
-
-                Strategy: {trade['strategy']}
-
-                Tag: {trade['tag']}
-                """
-            )
-
-            if trade["chart_url"]:
-
-                st.link_button("View Chart", trade["chart_url"])
-
-            if trade["notes"]:
-
-                st.caption(trade["notes"])
-
-            st.divider()
+st.dataframe(df.sort_values("date", ascending=False))
