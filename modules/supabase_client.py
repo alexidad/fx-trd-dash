@@ -28,17 +28,3 @@ def insert_trade(trade):
     supabase = get_supabase()
 
     supabase.table("trades").insert(trade).execute()
-
-
-def update_trade(trade_id, updates):
-
-    supabase = get_supabase()
-
-    supabase.table("trades").update(updates).eq("id", trade_id).execute()
-
-
-def delete_trade(trade_id):
-
-    supabase = get_supabase()
-
-    supabase.table("trades").delete().eq("id", trade_id).execute()
