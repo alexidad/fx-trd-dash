@@ -9,28 +9,45 @@ from modules.analytics import analytics_page
 from modules.risk_tools import risk_page
 from modules.accounts_page import accounts_page
 from modules.edge_analyzer import edge_page
-
 from modules.news_monitor import news_banner
-news_banner()
 
 st.set_page_config(layout="wide", page_title="Trading Dashboard")
 
-st.sidebar.title("Trading Dashboard")
+# News banner
+news_banner()
 
-page = option_menu(
-    "Navigation",
-    [
-        "Dashboard",
-        "Calendar",
-        "Journal",
-        "Add Trade",
-        "Analytics",
-        "Edge Analyzer",
-        "Risk Tools",
-        "Accounts"
-    ],
-)
+# Sidebar navigation
+with st.sidebar:
 
+    st.title("Trading Dashboard")
+
+    page = option_menu(
+        "Navigation",
+        [
+            "Dashboard",
+            "Calendar",
+            "Journal",
+            "Add Trade",
+            "Analytics",
+            "Edge Analyzer",
+            "Risk Tools",
+            "Accounts"
+        ],
+        icons=[
+            "bar-chart",
+            "calendar",
+            "journal",
+            "plus-circle",
+            "graph-up",
+            "search",
+            "calculator",
+            "gear"
+        ],
+        menu_icon="cast",
+        default_index=0
+    )
+
+# Page routing
 if page == "Dashboard":
     dashboard_page()
 
