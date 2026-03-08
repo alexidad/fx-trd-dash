@@ -1,16 +1,23 @@
 import streamlit as st
 import pandas as pd
+from modules.supabase_client import get_supabase
 
-ACCOUNTS_FILE = "accounts.csv"
 
 def accounts_page():
 
     st.title("Manage Accounts")
 
-    accounts = pd.read_csv(ACCOUNTS_FILE)
+    supabase = get_supabase()
 
-    st.subheader("Existing Accounts")
-    st.dataframe(accounts)
+    response = supabase.table("accounts").select("*").execute()
+
+    accounts = pd.DataFrame(response.data)
+
+    if not accounts.empty:
+
+        st.subheader("Existing Accounts")
+
+        st.dataframe(accounts)
 
     st.subheader("Create New Account")
 
@@ -31,31 +38,33 @@ def accounts_page():
 
     if st.button("Create Account"):
 
-        new = pd.DataFrame([[
-            name,acc_type,balance,risk,daily,drawdown
-        ]],columns=[
-            "account_name","account_type",
-            "starting_balance","risk_per_trade",
-            "daily_loss_limit","max_drawdown"
-        ])
+        supabase.table("accounts").insert({
 
-        accounts = pd.concat([accounts,new])
+            "account_name": name,
+            "account_type": acc_type,
+            "starting_balance": balance,
+            "risk_per_trade": risk,
+            "daily_loss_limit": daily,
+            "max_drawdown": drawdown
 
-        accounts.to_csv(ACCOUNTS_FILE,index=False)
+        }).execute()
 
         st.success("Account created")
 
     st.subheader("Delete Account")
 
-    delete_acc = st.selectbox(
-        "Select account to delete",
-        accounts["account_name"]
-    )
+    if not accounts.empty:
 
-    if st.button("Delete"):
+        delete_acc = st.selectbox(
+            "Select account to delete",
+            accounts["account_name"]
+        )
 
-        accounts = accounts[accounts["account_name"] != delete_acc]
+        if st.button("Delete"):
 
-        accounts.to_csv(ACCOUNTS_FILE,index=False)
+            supabase.table("accounts") \
+                .delete() \
+                .eq("account_name", delete_acc) \
+                .execute()
 
-        st.success("Account deleted")
+            st.success("Account deleted")
