@@ -1,29 +1,30 @@
 import streamlit as st
 import pandas as pd
+
 from modules.supabase_client import load_trades
 from modules.metrics_engine import compute_metrics
-from modules.calendar_heatmap import render_calendar
 
 
 def dashboard_page():
 
-    st.title("📊 Trading Dashboard")
+    st.title("Trading Dashboard")
 
-    selected_account = st.session_state.get("selected_account")
+    account = st.session_state.get("selected_account")
 
     trades = load_trades()
 
     if not trades:
-        st.info("No trades recorded yet.")
+
+        st.info("No trades yet.")
         return
 
     df = pd.DataFrame(trades)
 
-    # Filter by account
-    if selected_account:
-        df = df[df["account"] == selected_account]
+    if account:
+        df = df[df["account"] == account]
 
     if df.empty:
+
         st.info("No trades for this account.")
         return
 
@@ -33,21 +34,21 @@ def dashboard_page():
 
     st.subheader("Trading Overview")
 
-    col1, col2, col3, col4 = st.columns(4)
+    c1,c2,c3,c4 = st.columns(4)
 
-    col1.metric("Total Trades", metrics["total_trades"])
-    col2.metric("Win Rate", f'{metrics["win_rate"]}%')
-    col3.metric("Profit Factor", metrics["profit_factor"])
-    col4.metric("Total Profit", metrics["total_profit"])
+    c1.metric("Total Trades",metrics["total_trades"])
+    c2.metric("Win Rate",f'{metrics["win_rate"]}%')
+    c3.metric("Profit Factor",metrics["profit_factor"])
+    c4.metric("Total Profit",metrics["total_profit"])
 
     st.divider()
 
-    col5, col6, col7, col8 = st.columns(4)
+    c5,c6,c7,c8 = st.columns(4)
 
-    col5.metric("Avg Win", metrics["avg_win"])
-    col6.metric("Avg Loss", metrics["avg_loss"])
-    col7.metric("Best Trade", metrics["best_trade"])
-    col8.metric("Worst Trade", metrics["worst_trade"])
+    c5.metric("Avg Win",metrics["avg_win"])
+    c6.metric("Avg Loss",metrics["avg_loss"])
+    c7.metric("Best Trade",metrics["best_trade"])
+    c8.metric("Worst Trade",metrics["worst_trade"])
 
     st.divider()
 
@@ -74,22 +75,18 @@ def dashboard_page():
     st.dataframe(
 
         df[[
-            "date",
-            "pair",
-            "direction",
-            "entry",
-            "sl",
-            "tp",
-            "exit_price",
-            "lot_size",
-            "net_profit",
-            "strategy",
-            "tag"
+        "date",
+        "pair",
+        "direction",
+        "entry",
+        "sl",
+        "tp",
+        "exit_price",
+        "lot_size",
+        "net_profit",
+        "strategy",
+        "tag"
         ]].sort_values("date",ascending=False),
 
         use_container_width=True
     )
-
-    st.divider()
-
-    render_calendar(df)
