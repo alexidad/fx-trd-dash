@@ -4,22 +4,26 @@ from streamlit_option_menu import option_menu
 from modules.dashboard import dashboard_page
 from modules.add_trade import add_trade_page
 from modules.journal import journal_page
-from modules.calendar_view import calendar_page
-from modules.analytics import analytics_page
 from modules.edge_analyzer import edge_page
 from modules.accounts_page import accounts_page
+from modules.risk_tools import risk_page
 
 from modules.supabase_client import load_accounts
+
 
 st.set_page_config(
     page_title="Forex Trading Dashboard",
     layout="wide"
 )
 
+
+# Load accounts from Supabase
 accounts = load_accounts()
 
 account_names = [a["account_name"] for a in accounts] if accounts else []
 
+
+# SIDEBAR
 with st.sidebar:
 
     st.title("FX Dashboard")
@@ -31,7 +35,8 @@ with st.sidebar:
             account_names
         )
 
-        st.session_state["active_account"] = selected_account
+        # Store globally for other modules
+        st.session_state["selected_account"] = selected_account
 
     else:
 
@@ -43,43 +48,44 @@ with st.sidebar:
             "Dashboard",
             "Add Trade",
             "Journal",
-            "Calendar",
-            "Analytics",
+            "Risk Tools",
             "Edge Analyzer",
             "Accounts"
         ],
         icons=[
             "bar-chart",
-            "plus",
+            "plus-circle",
             "journal",
-            "calendar",
-            "graph-up",
+            "calculator",
             "cpu",
             "wallet"
-        ]
+        ],
+        default_index=0
     )
 
 
+# PAGE ROUTING
+
 if selected == "Dashboard":
+
     dashboard_page()
 
 elif selected == "Add Trade":
+
     add_trade_page()
 
 elif selected == "Journal":
+
     journal_page()
 
-elif selected == "Calendar":
-    calendar_page()
-
-elif selected == "Analytics":
-    analytics_page()
-
 elif selected == "Risk Tools":
+
     risk_page()
 
 elif selected == "Edge Analyzer":
+
     edge_page()
 
 elif selected == "Accounts":
+
     accounts_page()
