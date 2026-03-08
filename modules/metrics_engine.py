@@ -4,15 +4,27 @@ import pandas as pd
 def compute_metrics(df):
 
     if df.empty:
-        return {}
+        return {
+            "total_trades": 0,
+            "win_rate": 0,
+            "loss_rate": 0,
+            "gross_profit": 0,
+            "gross_loss": 0,
+            "profit_factor": 0,
+            "avg_win": 0,
+            "avg_loss": 0,
+            "best_trade": 0,
+            "worst_trade": 0,
+            "total_profit": 0
+        }
 
     total_trades = len(df)
 
     wins = df[df["net_profit"] > 0]
     losses = df[df["net_profit"] < 0]
 
-    win_rate = len(wins) / total_trades * 100 if total_trades else 0
-    loss_rate = len(losses) / total_trades * 100 if total_trades else 0
+    win_rate = (len(wins) / total_trades) * 100 if total_trades else 0
+    loss_rate = (len(losses) / total_trades) * 100 if total_trades else 0
 
     gross_profit = wins["net_profit"].sum()
     gross_loss = abs(losses["net_profit"].sum())
@@ -25,7 +37,9 @@ def compute_metrics(df):
     best_trade = df["net_profit"].max()
     worst_trade = df["net_profit"].min()
 
-    metrics = {
+    total_profit = df["net_profit"].sum()
+
+    return {
 
         "total_trades": total_trades,
         "win_rate": round(win_rate,2),
@@ -42,8 +56,6 @@ def compute_metrics(df):
         "best_trade": round(best_trade,2),
         "worst_trade": round(worst_trade,2),
 
-        "total_profit": round(df["net_profit"].sum(),2)
+        "total_profit": round(total_profit,2)
 
     }
-
-    return metrics
