@@ -1,7 +1,16 @@
-from supabase import create_client
 import streamlit as st
+from supabase import create_client, Client
 
-url = st.secrets["SUPABASE_URL"]
-key = st.secrets["SUPABASE_KEY"]
+@st.cache_resource
+def get_supabase() -> Client:
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
+    return create_client(url, key)
 
-supabase = create_client(url, key)
+def load_trades():
+    supabase = get_supabase()
+    response = supabase.table("trades").select("*").execute()
+
+    if response.data:
+        return response.data
+    return []
