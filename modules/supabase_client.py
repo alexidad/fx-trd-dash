@@ -7,10 +7,13 @@ def get_supabase() -> Client:
     key = st.secrets["SUPABASE_KEY"]
     return create_client(url, key)
 
+
 def load_trades():
     supabase = get_supabase()
+
     response = supabase.table("trades").select("*").execute()
 
     if response.data:
         return response.data
+
     return []
