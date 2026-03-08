@@ -10,13 +10,17 @@ def edge_page():
     trades = load_trades()
 
     if not trades:
-        st.info("No trades yet.")
+        st.info("No trades recorded.")
         return
 
     df = pd.DataFrame(trades)
 
-    st.subheader("Setup Performance")
+    st.subheader("Strategy Performance")
 
-    setup_perf = df.groupby("setup")["pnl"].agg(["count", "sum", "mean"])
+    strategy_perf = df.groupby("strategy")["net_profit"].agg(
+        trades="count",
+        total_profit="sum",
+        avg_profit="mean"
+    )
 
-    st.dataframe(setup_perf, use_container_width=True)
+    st.dataframe(strategy_perf, use_container_width=True)
