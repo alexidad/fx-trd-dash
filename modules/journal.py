@@ -10,18 +10,22 @@ def journal_page():
     trades = load_trades()
 
     if not trades:
-        st.info("No trades yet.")
+        st.info("No trades recorded.")
         return
 
     df = pd.DataFrame(trades)
 
     df["date"] = pd.to_datetime(df["date"])
 
-    pairs = sorted(df["pair"].unique())
-
-    pair_filter = st.selectbox("Filter by Pair", ["All"] + pairs)
+    pair_filter = st.selectbox(
+        "Filter Pair",
+        ["All"] + sorted(df["pair"].dropna().unique())
+    )
 
     if pair_filter != "All":
         df = df[df["pair"] == pair_filter]
 
-    st.dataframe(df.sort_values("date", ascending=False), use_container_width=True)
+    st.dataframe(
+        df.sort_values("date", ascending=False),
+        use_container_width=True
+    )
