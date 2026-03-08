@@ -2,11 +2,14 @@ import streamlit as st
 import pandas as pd
 from modules.supabase_client import load_trades
 from modules.metrics_engine import compute_metrics
+from modules.calendar_heatmap import render_calendar
 
 
 def dashboard_page():
 
     st.title("📊 Trading Dashboard")
+
+    selected_account = st.session_state.get("selected_account")
 
     trades = load_trades()
 
@@ -15,6 +18,14 @@ def dashboard_page():
         return
 
     df = pd.DataFrame(trades)
+
+    # Filter by account
+    if selected_account:
+        df = df[df["account"] == selected_account]
+
+    if df.empty:
+        st.info("No trades for this account.")
+        return
 
     df["date"] = pd.to_datetime(df["date"])
 
@@ -78,3 +89,7 @@ def dashboard_page():
 
         use_container_width=True
     )
+
+    st.divider()
+
+    render_calendar(df)
