@@ -10,15 +10,13 @@ def calendar_page():
     trades = load_trades()
 
     if not trades:
-        st.info("No trades yet.")
+        st.info("No trades recorded.")
         return
 
     df = pd.DataFrame(trades)
 
     df["date"] = pd.to_datetime(df["date"])
 
-    df["day"] = df["date"].dt.date
-
-    daily = df.groupby("day")["pnl"].sum()
+    daily = df.groupby("date")["net_profit"].sum()
 
     st.bar_chart(daily)
