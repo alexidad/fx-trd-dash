@@ -1,28 +1,32 @@
 import streamlit as st
 import pandas as pd
-from supabase_client import load_trades
+from modules.supabase_client import load_trades
 
-st.title("📈 Trade Analytics")
 
-trades = load_trades()
+def analytics_page():
 
-if not trades:
-    st.info("No trades available.")
-    st.stop()
+    st.title("📈 Trade Analytics")
 
-df = pd.DataFrame(trades)
+    trades = load_trades()
 
-df["date"] = pd.to_datetime(df["date"])
-df["month"] = df["date"].dt.to_period("M")
+    if not trades:
+        st.info("No trades yet.")
+        return
 
-monthly_pnl = df.groupby("month")["pnl"].sum()
+    df = pd.DataFrame(trades)
 
-st.subheader("Monthly Performance")
+    df["date"] = pd.to_datetime(df["date"])
 
-st.bar_chart(monthly_pnl)
+    df["month"] = df["date"].dt.to_period("M")
 
-st.subheader("Pair Performance")
+    st.subheader("Monthly Performance")
 
-pair_perf = df.groupby("pair")["pnl"].sum()
+    monthly = df.groupby("month")["pnl"].sum()
 
-st.bar_chart(pair_perf)
+    st.bar_chart(monthly)
+
+    st.subheader("Performance by Pair")
+
+    pair_perf = df.groupby("pair")["pnl"].sum()
+
+    st.bar_chart(pair_perf)
