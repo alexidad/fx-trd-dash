@@ -1,53 +1,159 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
+import pandas as pd
+from datetime import datetime
+import pytz
+import os
 
-from modules.dashboard import dashboard_page
-from modules.add_trade import add_trade_page
-from modules.journal import journal_page
-from modules.calendar_view import calendar_page
-from modules.analytics import analytics_page
-from modules.risk_tools import risk_page
-from modules.accounts_page import accounts_page
-from modules.edge_analyzer import edge_page
+PH_TIMEZONE = pytz.timezone("Asia/Manila")
 
-st.set_page_config(layout="wide", page_title="Trading Dashboard")
+PAIRS = [
+    "EURUSD",
+    "GBPJPY",
+    "USDJPY",
+    "AUDUSD",
+    "GBPUSD",
+    "EURJPY",
+    "NZDUSD",
+    "XAUUSD"
+]
 
-st.sidebar.title("Trading Dashboard")
+TRADE_COLUMNS = [
+    "date",
+    "time",
+    "pair",
+    "direction",
+    "session",
+    "strategy",
+    "tag",
+    "entry",
+    "sl",
+    "tp",
+    "exit_price",
+    "lot_size",
+    "spread",
+    "commission",
+    "swap",
+    "fib_level",
+    "pattern",
+    "emotion",
+    "rule_violation",
+    "chart_url",
+    "notes",
+    "net_profit"
+]
 
-page = option_menu(
-    "Navigation",
-    [
-        "Dashboard",
-        "Calendar",
-        "Journal",
-        "Add Trade",
-        "Analytics",
-        "Edge Analyzer",
-        "Risk Tools",
-        "Accounts"
-    ],
-)
 
-if page == "Dashboard":
-    dashboard_page()
+def detect_session(hour):
 
-elif page == "Calendar":
-    calendar_page()
+    if hour < 13:
+        return "Asia"
+    elif hour < 20:
+        return "London"
+    else:
+        return "New York"
 
-elif page == "Journal":
-    journal_page()
 
-elif page == "Add Trade":
-    add_trade_page()
+def add_trade_page():
 
-elif page == "Analytics":
-    analytics_page()
+    st.title("Add Trade (GMT+8)")
 
-elif page == "Edge Analyzer":
-    edge_page()
+    now = datetime.now(PH_TIMEZONE)
 
-elif page == "Risk Tools":
-    risk_page()
+    date = st.date_input("Date", now.date())
+    time = st.time_input("Time", now.time())
 
-elif page == "Accounts":
-    accounts_page()
+    session = detect_session(time.hour)
+
+    st.info(f"Detected Session: {session}")
+
+    pair = st.selectbox("Pair", PAIRS)
+
+    direction = st.selectbox("Direction", ["Buy", "Sell"])
+
+    strategy = st.text_input("Strategy")
+
+    tag = st.text_input("Trade Tag")
+
+    entry = st.number_input("Entry Price")
+
+    sl = st.number_input("Stop Loss")
+
+    tp = st.number_input("Take Profit")
+
+    exit_price = st.number_input("Exit Price")
+
+    lot = st.number_input("Lot Size")
+
+    spread = st.number_input("Spread Cost")
+
+    commission = st.number_input("Commission")
+
+    swap = st.number_input("Swap")
+
+    fib = st.selectbox("Fib Level", ["N/A", "50%", "61.8%"])
+
+    pattern = st.text_input("Pattern")
+
+    emotion = st.selectbox(
+        "Emotion",
+        ["Calm", "Confident", "Fearful", "Frustrated"]
+    )
+
+    violation = st.selectbox(
+        "Rule Violation",
+        ["None", "Early Entry", "Ignored News", "Moved SL", "Overtrading"]
+    )
+
+    chart_url = st.text_input("TradingView Chart URL")
+
+    notes = st.text_area("Notes")
+
+    if st.button("Save Trade"):
+
+        net_profit = (exit_price - entry) * lot * 100000
+
+        if direction == "Sell":
+            net_profit = (entry - exit_price) * lot * 100000
+
+        new_trade = pd.DataFrame([[
+            date,
+            time,
+            pair,
+            direction,
+            session,
+            strategy,
+            tag,
+            entry,
+            sl,
+            tp,
+            exit_price,
+            lot,
+            spread,
+            commission,
+            swap,
+            fib,
+            pattern,
+            emotion,
+            violation,
+            chart_url,
+            notes,
+            net_profit
+        ]], columns=TRADE_COLUMNS)
+
+        os.makedirs("accounts", exist_ok=True)
+
+        file = "accounts/default_trades.csv"
+
+        if os.path.exists(file):
+
+            existing = pd.read_csv(file)
+
+            updated = pd.concat([existing, new_trade])
+
+        else:
+
+            updated = new_trade
+
+        updated.to_csv(file, index=False)
+
+        st.success("Trade saved successfully")
