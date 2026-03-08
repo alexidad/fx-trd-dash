@@ -75,6 +75,9 @@ elif selected == "Calendar":
 elif selected == "Analytics":
     analytics_page()
 
+elif selected == "Risk Tools":
+    risk_page()
+
 elif selected == "Edge Analyzer":
     edge_page()
 
