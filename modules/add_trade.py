@@ -1,36 +1,11 @@
 import streamlit as st
-from datetime import datetime
 import pytz
+from datetime import datetime
 
 from modules.supabase_client import insert_trade
 
 
 PH_TIMEZONE = pytz.timezone("Asia/Manila")
-
-
-PAIRS = [
-"EURUSD",
-"GBPUSD",
-"USDJPY",
-"GBPJPY",
-"XAUUSD"
-]
-
-
-STRATEGIES = [
-"BRC",
-"Breakout",
-"Pullback",
-"Reversal"
-]
-
-
-TAGS = [
-"A+",
-"A",
-"B",
-"C"
-]
 
 
 def detect_session(hour):
@@ -61,20 +36,17 @@ def add_trade_page():
         st.warning("Please select an account.")
         return
 
-    date = st.date_input("Trade Date")
+    trade_date = st.date_input("Trade Date")
 
-    time = st.time_input("Trade Time")
+    trade_time = st.time_input("Trade Time")
 
-    pair = st.selectbox("Pair",PAIRS)
+    pair = st.text_input("Pair")
 
-    direction = st.selectbox(
-        "Direction",
-        ["Buy","Sell"]
-    )
+    direction = st.selectbox("Direction",["Buy","Sell"])
 
-    strategy = st.selectbox("Strategy",STRATEGIES)
+    strategy = st.text_input("Strategy")
 
-    tag = st.selectbox("Tag",TAGS)
+    tag = st.text_input("Tag")
 
     entry = st.number_input("Entry")
 
@@ -100,15 +72,15 @@ def add_trade_page():
 
     if st.button("Save Trade"):
 
-        hour = time.hour
+        hour = trade_time.hour
 
         session = detect_session(hour)
 
         trade = {
 
             "account":account,
-            "date":str(date),
-            "time":str(time),
+            "date":str(trade_date),
+            "time":str(trade_time),
 
             "pair":pair,
             "direction":direction,
@@ -136,4 +108,4 @@ def add_trade_page():
 
         insert_trade(trade)
 
-        st.success("Trade saved.")
+        st.success("Trade saved!")
