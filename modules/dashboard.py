@@ -58,16 +58,6 @@ def dashboard_page():
 
     st.bar_chart(pair_perf)
 
-    st.subheader("PnL by Weekday")
-
-    df["weekday"] = df["date"].dt.day_name()
-
-    weekday_perf = df.groupby("weekday")["net_profit"].sum()
-
-    st.bar_chart(weekday_perf)
-
-    st.divider()
-
     st.subheader("Recent Trades")
 
     df["date"] = df["date"].dt.strftime("%b %d")
@@ -83,9 +73,7 @@ def dashboard_page():
         "tp",
         "exit_price",
         "lot_size",
-        "net_profit",
-        "strategy",
-        "tag"
+        "net_profit"
         ]].sort_values("date",ascending=False),
 
         use_container_width=True
