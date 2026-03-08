@@ -1,20 +1,4 @@
-import pandas as pd
-
-
 def compute_metrics(df):
-
-    if df.empty:
-
-        return {
-            "total_trades":0,
-            "win_rate":0,
-            "profit_factor":0,
-            "total_profit":0,
-            "avg_win":0,
-            "avg_loss":0,
-            "best_trade":0,
-            "worst_trade":0
-        }
 
     wins = df[df["net_profit"] > 0]
     losses = df[df["net_profit"] < 0]
