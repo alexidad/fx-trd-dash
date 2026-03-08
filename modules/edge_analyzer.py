@@ -1,19 +1,22 @@
 import streamlit as st
 import pandas as pd
-from supabase_client import load_trades
+from modules.supabase_client import load_trades
 
-st.title("🧠 Edge Analyzer")
 
-trades = load_trades()
+def edge_page():
 
-if not trades:
-    st.info("No trades yet.")
-    st.stop()
+    st.title("🧠 Edge Analyzer")
 
-df = pd.DataFrame(trades)
+    trades = load_trades()
 
-setup_perf = df.groupby("setup")["pnl"].agg(["count", "sum", "mean"])
+    if not trades:
+        st.info("No trades yet.")
+        return
 
-st.subheader("Setup Performance")
+    df = pd.DataFrame(trades)
 
-st.dataframe(setup_perf)
+    st.subheader("Setup Performance")
+
+    setup_perf = df.groupby("setup")["pnl"].agg(["count", "sum", "mean"])
+
+    st.dataframe(setup_perf, use_container_width=True)
