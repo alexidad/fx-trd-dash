@@ -7,25 +7,46 @@ from modules.journal import journal_page
 from modules.calendar_view import calendar_page
 from modules.analytics import analytics_page
 from modules.edge_analyzer import edge_page
+from modules.accounts_page import accounts_page
 
+from modules.supabase_client import load_accounts
 
 st.set_page_config(
     page_title="Forex Trading Dashboard",
     layout="wide"
 )
 
+accounts = load_accounts()
+
+account_names = [a["account_name"] for a in accounts] if accounts else []
 
 with st.sidebar:
 
+    st.title("FX Dashboard")
+
+    if account_names:
+
+        selected_account = st.selectbox(
+            "Select Account",
+            account_names
+        )
+
+        st.session_state["active_account"] = selected_account
+
+    else:
+
+        st.warning("No accounts created")
+
     selected = option_menu(
-        "FX Dashboard",
+        "Menu",
         [
             "Dashboard",
             "Add Trade",
             "Journal",
             "Calendar",
             "Analytics",
-            "Edge Analyzer"
+            "Edge Analyzer",
+            "Accounts"
         ],
         icons=[
             "bar-chart",
@@ -33,7 +54,8 @@ with st.sidebar:
             "journal",
             "calendar",
             "graph-up",
-            "cpu"
+            "cpu",
+            "wallet"
         ]
     )
 
@@ -55,3 +77,6 @@ elif selected == "Analytics":
 
 elif selected == "Edge Analyzer":
     edge_page()
+
+elif selected == "Accounts":
+    accounts_page()
