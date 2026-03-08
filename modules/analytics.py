@@ -1,79 +1,28 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import os
+from supabase_client import load_trades
 
-ACCOUNTS_FILE = "accounts.csv"
-ACCOUNTS_FOLDER = "accounts"
+st.title("📈 Trade Analytics")
 
-def analytics_page():
+trades = load_trades()
 
-    st.title("Analytics")
+if not trades:
+    st.info("No trades available.")
+    st.stop()
 
-    accounts = pd.read_csv(ACCOUNTS_FILE)
+df = pd.DataFrame(trades)
 
-    account = st.sidebar.selectbox(
-        "Account",
-        accounts["account_name"]
-    )
+df["date"] = pd.to_datetime(df["date"])
+df["month"] = df["date"].dt.to_period("M")
 
-    file = f"{ACCOUNTS_FOLDER}/{account.replace(' ','_').lower()}_trades.csv"
+monthly_pnl = df.groupby("month")["pnl"].sum()
 
-    if not os.path.exists(file):
-        st.warning("No trades yet")
-        return
+st.subheader("Monthly Performance")
 
-    trades = pd.read_csv(file)
+st.bar_chart(monthly_pnl)
 
-    st.subheader("Filters")
+st.subheader("Pair Performance")
 
-    pair = st.selectbox(
-        "Pair",
-        ["All"] + sorted(trades["pair"].dropna().unique().tolist())
-    )
+pair_perf = df.groupby("pair")["pnl"].sum()
 
-    session = st.selectbox(
-        "Session",
-        ["All"] + sorted(trades["session"].dropna().unique().tolist())
-    )
-
-    tag = st.selectbox(
-        "Tag",
-        ["All"] + sorted(trades["tag"].dropna().unique().tolist())
-    )
-
-    if pair != "All":
-        trades = trades[trades["pair"] == pair]
-
-    if session != "All":
-        trades = trades[trades["session"] == session]
-
-    if tag != "All":
-        trades = trades[trades["tag"] == tag]
-
-    st.subheader("Pair Profitability")
-
-    pair_perf = trades.groupby("pair")["net_profit"].sum().reset_index()
-
-    fig = px.bar(
-        pair_perf,
-        x="pair",
-        y="net_profit",
-        color="net_profit",
-        color_continuous_scale="RdYlGn"
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.subheader("Session Performance")
-
-    session_perf = trades.groupby("session")["net_profit"].sum().reset_index()
-
-    fig = px.bar(
-        session_perf,
-        x="session",
-        y="net_profit",
-        color="net_profit"
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
+st.bar_chart(pair_perf)
