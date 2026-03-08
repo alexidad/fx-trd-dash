@@ -1,54 +1,20 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import os
+from supabase_client import load_trades
 
-ACCOUNTS_FILE = "accounts.csv"
-ACCOUNTS_FOLDER = "accounts"
+st.title("📅 Trading Calendar")
 
-def calendar_page():
+trades = load_trades()
 
-    st.title("Trading Calendar")
+if not trades:
+    st.info("No trades yet.")
+    st.stop()
 
-    accounts = pd.read_csv(ACCOUNTS_FILE)
+df = pd.DataFrame(trades)
 
-    account = st.sidebar.selectbox(
-        "Account",
-        accounts["account_name"]
-    )
+df["date"] = pd.to_datetime(df["date"])
+df["day"] = df["date"].dt.date
 
-    file = f"{ACCOUNTS_FOLDER}/{account.replace(' ','_').lower()}_trades.csv"
+daily_pnl = df.groupby("day")["pnl"].sum()
 
-    if not os.path.exists(file):
-        st.warning("No trades yet")
-        return
-
-    trades = pd.read_csv(file)
-
-    trades["date"] = pd.to_datetime(trades["date"])
-
-    daily = trades.groupby("date").agg(
-        profit=("net_profit","sum"),
-        trades=("net_profit","count")
-    ).reset_index()
-
-    daily["month"] = daily["date"].dt.month
-    daily["day"] = daily["date"].dt.day
-
-    st.subheader("Daily Performance Heatmap")
-
-    fig = px.density_heatmap(
-        daily,
-        x="day",
-        y="month",
-        z="profit",
-        color_continuous_scale="RdYlGn",
-        nbinsx=31,
-        nbinsy=12
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.subheader("Daily Summary")
-
-    st.dataframe(daily)
+st.bar_chart(daily_pnl)
