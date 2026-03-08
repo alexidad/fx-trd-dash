@@ -1,23 +1,27 @@
 import streamlit as st
 import pandas as pd
-from supabase_client import load_trades
+from modules.supabase_client import load_trades
 
-st.title("📓 Trade Journal")
 
-trades = load_trades()
+def journal_page():
 
-if not trades:
-    st.info("No trades recorded.")
-    st.stop()
+    st.title("📓 Trade Journal")
 
-df = pd.DataFrame(trades)
-df["date"] = pd.to_datetime(df["date"])
+    trades = load_trades()
 
-pairs = sorted(df["pair"].unique())
+    if not trades:
+        st.info("No trades yet.")
+        return
 
-pair_filter = st.selectbox("Filter by Pair", ["All"] + pairs)
+    df = pd.DataFrame(trades)
 
-if pair_filter != "All":
-    df = df[df["pair"] == pair_filter]
+    df["date"] = pd.to_datetime(df["date"])
 
-st.dataframe(df.sort_values("date", ascending=False))
+    pairs = sorted(df["pair"].unique())
+
+    pair_filter = st.selectbox("Filter by Pair", ["All"] + pairs)
+
+    if pair_filter != "All":
+        df = df[df["pair"] == pair_filter]
+
+    st.dataframe(df.sort_values("date", ascending=False), use_container_width=True)
