@@ -5,12 +5,12 @@ from modules.supabase_client import load_trades
 
 def analytics_page():
 
-    st.title("📈 Trade Analytics")
+    st.title("📈 Analytics")
 
     trades = load_trades()
 
     if not trades:
-        st.info("No trades yet.")
+        st.info("No trades recorded.")
         return
 
     df = pd.DataFrame(trades)
@@ -19,14 +19,14 @@ def analytics_page():
 
     df["month"] = df["date"].dt.to_period("M")
 
-    st.subheader("Monthly Performance")
+    st.subheader("Monthly Profit")
 
-    monthly = df.groupby("month")["pnl"].sum()
+    monthly = df.groupby("month")["net_profit"].sum()
 
     st.bar_chart(monthly)
 
-    st.subheader("Performance by Pair")
+    st.subheader("Profit by Pair")
 
-    pair_perf = df.groupby("pair")["pnl"].sum()
+    pair_perf = df.groupby("pair")["net_profit"].sum()
 
     st.bar_chart(pair_perf)
