@@ -10,6 +10,17 @@ def get_supabase():
 
     return create_client(url, key)
 
+def load_accounts():
+
+    supabase = get_supabase()
+
+    response = supabase.table("accounts").select("*").execute()
+
+    if response.data:
+        return response.data
+
+    return []
+
 
 def load_trades():
 
