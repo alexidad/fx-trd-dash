@@ -5,6 +5,20 @@ from modules.supabase_client import load_trades
 from modules.metrics_engine import compute_metrics
 
 
+def calculate_profit(row):
+
+    entry = float(row["entry"])
+    exit_price = float(row["exit_price"])
+    lot = float(row["lot_size"])
+    direction = row["direction"]
+
+    if direction == "Buy":
+        return (exit_price - entry) * lot * 10000
+
+    else:
+        return (entry - exit_price) * lot * 10000
+
+
 def dashboard_page():
 
     st.title("Trading Dashboard")
@@ -14,7 +28,6 @@ def dashboard_page():
     trades = load_trades()
 
     if not trades:
-
         st.info("No trades yet.")
         return
 
@@ -24,11 +37,14 @@ def dashboard_page():
         df = df[df["account"] == account]
 
     if df.empty:
-
         st.info("No trades for this account.")
         return
 
+    # Convert date
     df["date"] = pd.to_datetime(df["date"])
+
+    # 🔥 LIVE PROFIT CALCULATION
+    df["net_profit"] = df.apply(calculate_profit, axis=1)
 
     metrics = compute_metrics(df)
 
@@ -39,7 +55,7 @@ def dashboard_page():
     c1.metric("Total Trades",metrics["total_trades"])
     c2.metric("Win Rate",f'{metrics["win_rate"]}%')
     c3.metric("Profit Factor",metrics["profit_factor"])
-    c4.metric("Total Profit",metrics["total_profit"])
+    c4.metric("Total Profit",round(metrics["total_profit"],2))
 
     st.divider()
 
@@ -58,6 +74,8 @@ def dashboard_page():
 
     st.bar_chart(pair_perf)
 
+    st.divider()
+
     st.subheader("Recent Trades")
 
     df["date"] = df["date"].dt.strftime("%b %d")
@@ -65,15 +83,15 @@ def dashboard_page():
     st.dataframe(
 
         df[[
-        "date",
-        "pair",
-        "direction",
-        "entry",
-        "sl",
-        "tp",
-        "exit_price",
-        "lot_size",
-        "net_profit"
+            "date",
+            "pair",
+            "direction",
+            "entry",
+            "sl",
+            "tp",
+            "exit_price",
+            "lot_size",
+            "net_profit"
         ]].sort_values("date",ascending=False),
 
         use_container_width=True
