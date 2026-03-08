@@ -1,7 +1,5 @@
 streamlit
 pandas
-plotly
-pytz
-streamlit-option-menu
-requests
 supabase
+python-dateutil
+pytz
