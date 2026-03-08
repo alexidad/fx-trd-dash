@@ -17,4 +17,28 @@ def load_trades():
 
     response = supabase.table("trades").select("*").execute()
 
-    return response.data if response.data else []
+    if response.data:
+        return response.data
+
+    return []
+
+
+def insert_trade(trade):
+
+    supabase = get_supabase()
+
+    supabase.table("trades").insert(trade).execute()
+
+
+def update_trade(trade_id, updates):
+
+    supabase = get_supabase()
+
+    supabase.table("trades").update(updates).eq("id", trade_id).execute()
+
+
+def delete_trade(trade_id):
+
+    supabase = get_supabase()
+
+    supabase.table("trades").delete().eq("id", trade_id).execute()
