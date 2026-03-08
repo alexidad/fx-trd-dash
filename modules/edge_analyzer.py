@@ -1,40 +1,19 @@
 import streamlit as st
 import pandas as pd
-import os
+from supabase_client import load_trades
 
-ACCOUNTS_FILE = "accounts.csv"
-ACCOUNTS_FOLDER = "accounts"
+st.title("🧠 Edge Analyzer")
 
-def edge_page():
+trades = load_trades()
 
-    st.title("Edge Analyzer")
+if not trades:
+    st.info("No trades yet.")
+    st.stop()
 
-    accounts = pd.read_csv(ACCOUNTS_FILE)
+df = pd.DataFrame(trades)
 
-    account = st.sidebar.selectbox(
-        "Account",
-        accounts["account_name"]
-    )
+setup_perf = df.groupby("setup")["pnl"].agg(["count", "sum", "mean"])
 
-    file = f"{ACCOUNTS_FOLDER}/{account.replace(' ','_').lower()}_trades.csv"
+st.subheader("Setup Performance")
 
-    if not os.path.exists(file):
-
-        st.warning("No trades yet")
-        return
-
-    trades = pd.read_csv(file)
-
-    st.subheader("Best Setups")
-
-    combos = trades.groupby(
-        ["pair","session","strategy","tag"]
-    )["net_profit"].agg(["sum","count"])
-
-    combos = combos.sort_values("sum",ascending=False)
-
-    st.dataframe(combos.head(10))
-
-    st.subheader("Worst Setups")
-
-    st.dataframe(combos.tail(10))
+st.dataframe(setup_perf)
