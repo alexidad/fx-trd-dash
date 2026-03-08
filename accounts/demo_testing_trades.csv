@@ -1,0 +1,2 @@
+date,pair,direction,session,entry,sl,tp,exit_price,lot_size,spread,commission,swap,fib_level,pattern,emotion,rule_violation,notes
+2026-02-12,GBPJPY,Sell,Asia,209.006,209.63,208.119,208.119,1.12,0.0,3.36,0.0,N/A,Engulfing,Calm,None,

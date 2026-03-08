@@ -1,0 +1,4 @@
+﻿account_name,starting_balance,risk_per_trade,daily_loss_limit,max_drawdown,commission_per_lot,avg_spread
+FundedNext 6k,6000,1,300,600,7,1.2
+Demo Testing,15000,1,750,1500,7,1
+Backtest Strategy,10000,1,0,0,0,0
