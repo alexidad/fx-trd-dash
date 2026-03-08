@@ -1,5 +1,6 @@
 streamlit
 pandas
 supabase
+streamlit-option-menu
 python-dateutil
 pytz
