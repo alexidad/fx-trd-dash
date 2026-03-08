@@ -1,20 +1,24 @@
 import streamlit as st
 import pandas as pd
-from supabase_client import load_trades
+from modules.supabase_client import load_trades
 
-st.title("📅 Trading Calendar")
 
-trades = load_trades()
+def calendar_page():
 
-if not trades:
-    st.info("No trades yet.")
-    st.stop()
+    st.title("📅 Trading Calendar")
 
-df = pd.DataFrame(trades)
+    trades = load_trades()
 
-df["date"] = pd.to_datetime(df["date"])
-df["day"] = df["date"].dt.date
+    if not trades:
+        st.info("No trades yet.")
+        return
 
-daily_pnl = df.groupby("day")["pnl"].sum()
+    df = pd.DataFrame(trades)
 
-st.bar_chart(daily_pnl)
+    df["date"] = pd.to_datetime(df["date"])
+
+    df["day"] = df["date"].dt.date
+
+    daily = df.groupby("day")["pnl"].sum()
+
+    st.bar_chart(daily)
