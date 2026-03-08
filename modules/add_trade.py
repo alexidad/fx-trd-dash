@@ -1,8 +1,7 @@
 import streamlit as st
-import pandas as pd
 from datetime import datetime
 import pytz
-import os
+from modules.supabase_client import supabase
 
 PH_TIMEZONE = pytz.timezone("Asia/Manila")
 
@@ -15,31 +14,6 @@ PAIRS = [
     "EURJPY",
     "NZDUSD",
     "XAUUSD"
-]
-
-TRADE_COLUMNS = [
-    "date",
-    "time",
-    "pair",
-    "direction",
-    "session",
-    "strategy",
-    "tag",
-    "entry",
-    "sl",
-    "tp",
-    "exit_price",
-    "lot_size",
-    "spread",
-    "commission",
-    "swap",
-    "fib_level",
-    "pattern",
-    "emotion",
-    "rule_violation",
-    "chart_url",
-    "notes",
-    "net_profit"
 ]
 
 
@@ -110,50 +84,40 @@ def add_trade_page():
 
     if st.button("Save Trade"):
 
+        # Calculate P&L
         net_profit = (exit_price - entry) * lot * 100000
 
         if direction == "Sell":
             net_profit = (entry - exit_price) * lot * 100000
 
-        new_trade = pd.DataFrame([[
-            date,
-            time,
-            pair,
-            direction,
-            session,
-            strategy,
-            tag,
-            entry,
-            sl,
-            tp,
-            exit_price,
-            lot,
-            spread,
-            commission,
-            swap,
-            fib,
-            pattern,
-            emotion,
-            violation,
-            chart_url,
-            notes,
-            net_profit
-        ]], columns=TRADE_COLUMNS)
+        trade_data = {
+            "account": "default",
+            "date": str(date),
+            "time": str(time),
+            "pair": pair,
+            "direction": direction,
+            "session": session,
+            "strategy": strategy,
+            "tag": tag,
+            "entry": entry,
+            "sl": sl,
+            "tp": tp,
+            "exit_price": exit_price,
+            "lot_size": lot,
+            "spread": spread,
+            "commission": commission,
+            "swap": swap,
+            "net_profit": net_profit,
+            "chart_url": chart_url,
+            "notes": notes
+        }
 
-        os.makedirs("accounts", exist_ok=True)
+        try:
 
-        file = "accounts/default_trades.csv"
+            supabase.table("trades").insert(trade_data).execute()
 
-        if os.path.exists(file):
+            st.success("Trade saved successfully")
 
-            existing = pd.read_csv(file)
+        except Exception as e:
 
-            updated = pd.concat([existing, new_trade])
-
-        else:
-
-            updated = new_trade
-
-        updated.to_csv(file, index=False)
-
-        st.success("Trade saved successfully")
+            st.error(f"Error saving trade: {e}")
