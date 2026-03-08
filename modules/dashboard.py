@@ -18,18 +18,21 @@ def dashboard_page():
     df["date"] = pd.to_datetime(df["date"])
 
     total_trades = len(df)
-    wins = len(df[df["result"] == "Win"])
-    losses = len(df[df["result"] == "Loss"])
 
-    winrate = (wins / total_trades) * 100 if total_trades else 0
-    total_pnl = df["pnl"].sum()
+    total_profit = df["net_profit"].sum()
+
+    avg_profit = df["net_profit"].mean()
+
+    best_trade = df["net_profit"].max()
+
+    worst_trade = df["net_profit"].min()
 
     col1, col2, col3, col4 = st.columns(4)
 
     col1.metric("Total Trades", total_trades)
-    col2.metric("Win Rate", f"{winrate:.2f}%")
-    col3.metric("Wins", wins)
-    col4.metric("Total PnL", f"{total_pnl:.2f}")
+    col2.metric("Total Profit", round(total_profit,2))
+    col3.metric("Average Trade", round(avg_profit,2))
+    col4.metric("Best Trade", round(best_trade,2))
 
     st.subheader("Recent Trades")
 
