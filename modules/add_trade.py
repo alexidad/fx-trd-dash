@@ -1,95 +1,98 @@
 import streamlit as st
 from datetime import datetime
 import pytz
-from modules.supabase_client import get_supabase
+
+from modules.supabase_client import insert_trade
 
 
-def detect_session(trade_time):
+PH_TIMEZONE = pytz.timezone("Asia/Manila")
 
-    hour = trade_time.hour
 
-    if 0 <= hour < 9:
-        return "Tokyo"
+PAIRS = [
+"EURUSD",
+"GBPUSD",
+"USDJPY",
+"GBPJPY",
+"XAUUSD"
+]
 
-    elif 9 <= hour < 16:
+
+STRATEGIES = [
+"BRC",
+"Breakout",
+"Pullback",
+"Reversal"
+]
+
+
+TAGS = [
+"A+",
+"A",
+"B",
+"C"
+]
+
+
+def detect_session(hour):
+
+    if 0 <= hour < 7:
+        return "Asia"
+
+    if 7 <= hour < 13:
         return "London"
 
-    elif 16 <= hour < 20:
+    if 13 <= hour < 16:
         return "Pre-NY"
 
-    else:
+    if 16 <= hour < 20:
         return "London-NY Overlap"
+
+    return "NY"
 
 
 def add_trade_page():
 
-    st.title("➕ Add Trade")
+    st.title("Add Trade")
 
-    if "active_account" not in st.session_state:
+    account = st.session_state.get("selected_account")
 
-        st.warning("Please create or select an account first.")
+    if not account:
+
+        st.warning("Please select an account.")
         return
 
-    account = st.session_state["active_account"]
+    date = st.date_input("Trade Date")
 
-    st.write(f"Account: **{account}**")
+    time = st.time_input("Trade Time")
 
-    supabase = get_supabase()
+    pair = st.selectbox("Pair",PAIRS)
 
-    col1, col2 = st.columns(2)
+    direction = st.selectbox(
+        "Direction",
+        ["Buy","Sell"]
+    )
 
-    with col1:
+    strategy = st.selectbox("Strategy",STRATEGIES)
 
-        pair = st.text_input("Pair")
+    tag = st.selectbox("Tag",TAGS)
 
-        direction = st.selectbox(
-            "Direction",
-            ["Buy", "Sell"]
-        )
+    entry = st.number_input("Entry")
 
-        strategy = st.text_input("Strategy")
+    sl = st.number_input("Stop Loss")
 
-        tag = st.text_input("Tag")
+    tp = st.number_input("Take Profit")
 
-    with col2:
+    exit_price = st.number_input("Exit Price")
 
-        trade_date = st.date_input("Trade Date")
+    lot_size = st.number_input("Lot Size")
 
-        trade_time = st.time_input(
-            "Trade Time (AM/PM)"
-        )
+    spread = st.number_input("Spread")
 
-        session = detect_session(trade_time)
+    commission = st.number_input("Commission")
 
-        st.write(f"Detected Session: **{session}**")
+    swap = st.number_input("Swap")
 
-    st.divider()
-
-    col3, col4 = st.columns(2)
-
-    with col3:
-
-        entry = st.number_input("Entry Price")
-
-        sl = st.number_input("Stop Loss")
-
-        tp = st.number_input("Take Profit")
-
-        exit_price = st.number_input("Exit Price")
-
-    with col4:
-
-        lot_size = st.number_input("Lot Size")
-
-        spread = st.number_input("Spread")
-
-        commission = st.number_input("Commission")
-
-        swap = st.number_input("Swap")
-
-        net_profit = st.number_input("Net Profit")
-
-    st.divider()
+    net_profit = st.number_input("Net Profit")
 
     chart_url = st.text_input("Chart URL")
 
@@ -97,29 +100,40 @@ def add_trade_page():
 
     if st.button("Save Trade"):
 
-        trade_data = {
+        hour = time.hour
 
-            "account": account,
-            "date": trade_date.isoformat(),
-            "time": trade_time.strftime("%H:%M:%S"),
-            "pair": pair,
-            "direction": direction,
-            "session": session,
-            "strategy": strategy,
-            "tag": tag,
-            "entry": entry,
-            "sl": sl,
-            "tp": tp,
-            "exit_price": exit_price,
-            "lot_size": lot_size,
-            "spread": spread,
-            "commission": commission,
-            "swap": swap,
-            "net_profit": net_profit,
-            "chart_url": chart_url,
-            "notes": notes
+        session = detect_session(hour)
+
+        trade = {
+
+            "account":account,
+            "date":str(date),
+            "time":str(time),
+
+            "pair":pair,
+            "direction":direction,
+            "session":session,
+
+            "strategy":strategy,
+            "tag":tag,
+
+            "entry":entry,
+            "sl":sl,
+            "tp":tp,
+            "exit_price":exit_price,
+
+            "lot_size":lot_size,
+
+            "spread":spread,
+            "commission":commission,
+            "swap":swap,
+
+            "net_profit":net_profit,
+
+            "chart_url":chart_url,
+            "notes":notes
         }
 
-        supabase.table("trades").insert(trade_data).execute()
+        insert_trade(trade)
 
-        st.success("Trade saved!")
+        st.success("Trade saved.")
