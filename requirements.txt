@@ -4,3 +4,4 @@ plotly
 pytz
 streamlit-option-menu
 requests
+supabase
